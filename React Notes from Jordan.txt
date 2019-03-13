@@ -1,0 +1,24 @@
+create react app
+  good for setting up a prototype
+  framework gets in your way for adding backend
+
+next.js
+  good for indexed websites
+  faster for first render of content
+  
+gatsby
+  good for building 'blog' content
+    good for static
+    includes graphql
+    optimizes blog posts in over the top, technical ways
+    
+Sum up:
+  gatsby is good for a personal website.
+  Jordan's starter kit  
+    on his github -> the extensions to react that he typically needs.
+      it includes node.js
+        but it's "not server-side rendered" the way next.js assumes you will do.
+          send them a bundle of JS and near empty html. -> like his website. The browser builds the html based on JS logic. React builds it.
+    This seems like it would make CSS harder.
+      Jordan says there are variants of CSS to use in this case -> nobody writes vanilla CSS
+        Read about: 1) JSS (react-JSS) 2) styled-components (easier to get started with, but not as nice) 3) emotion 4) SASS/LESS (slightly behind the times)
