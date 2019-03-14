@@ -36,18 +36,19 @@ class Board extends React.Component {
 
     //isUsedForVictory, 
     //style={{background: isUsedForVictory ?  '#bcd6ff' :  '#FFFFFF' }}
-  static Square = ({value, onClick}) => <button 
+  static Square = ({isUsedForVictory, value, onClick}) => <button 
   className="square" 
   onClick={onClick}
-  
+  style={{background: isUsedForVictory ?  '#bcd6ff' :  '#FFFFFF' }}
   >
     {value}
   </button>
 
   //isUsedForVictory={this.props.checkIfUsedForVictory(i)}
+    //The problem is: isUsedForVictory isn't actually ever called. It's just defined.
   renderSquare(i) {
     return <Board.Square 
-    
+    isUsedForVictory={this.props.isUsedForVictory(i)}
     value={this.props.squares[i]}
     onClick={()=>this.props.onClick(i)}
     />;
@@ -103,12 +104,12 @@ class Game extends React.Component {
     ])
   } 
 
+  //TODO: Make this method turn only the winning squares light blue to highlight the 3 in a row.
+    //Currently, this method highlights all squares when a victory is reached.
   checkIfUsedForVictory(i){
     const history = this.state.history.slice(0, this.state.stepNumber + 1)
     const current = history[history.length-1]
     const squares = current.squares.slice();
-
-    
     
     //If there is no winner, no swuares are used for victory, so return false
     if(!calculateWinner(squares)) {
@@ -250,11 +251,12 @@ class Game extends React.Component {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O')
     }
 
+    //isUsedForVictory={this.checkIfUsedForVictory}     
     return (
       <div className="game">
         <div className="game-board">
           <Board 
-            isUsedForVictory={this.checkIfUsedForVictory}
+            isUsedForVictory= {(i) => this.checkIfUsedForVictory(i)}
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
           />
