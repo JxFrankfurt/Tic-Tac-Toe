@@ -19,7 +19,7 @@ import styled from 'styled-components'
 
 //styled-components
   //a common way to make style
-  //big downside: devtools css naming is gibberish
+  //big downside: devtools css class naming is gibberish
 const Row = styled.div`
   &::after{
     clear: both;
@@ -28,17 +28,26 @@ const Row = styled.div`
   }
 `
 
+
+
 class Board extends React.Component {
   //"Compound components"
     //Lambda function component stored in a static variable
+
+    //isUsedForVictory, 
+    //style={{background: isUsedForVictory ?  '#bcd6ff' :  '#FFFFFF' }}
   static Square = ({value, onClick}) => <button 
   className="square" 
   onClick={onClick}
+  
   >
     {value}
   </button>
+
+  //isUsedForVictory={this.props.checkIfUsedForVictory(i)}
   renderSquare(i) {
     return <Board.Square 
+    
     value={this.props.squares[i]}
     onClick={()=>this.props.onClick(i)}
     />;
@@ -81,6 +90,59 @@ class Game extends React.Component {
     }
   }
 
+  static getWinningLines = function(){
+    return ([
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ])
+  } 
+
+  checkIfUsedForVictory(i){
+    const history = this.state.history.slice(0, this.state.stepNumber + 1)
+    const current = history[history.length-1]
+    const squares = current.squares.slice();
+
+    
+    
+    //If there is no winner, no swuares are used for victory, so return false
+    if(!calculateWinner(squares)) {
+      return false
+    }
+    else{
+      //look at squares and check if any rows, cols, or diags are all 'X' or all 'O'.
+        //Because of this if/else, one row/col/diag surely is filled with 'X' or 'O'
+          //There is an efficient way to search and there is a naive, but good enough way. In this case, I'm not worried about performance.
+            //This is a really small puzzle.
+      /*
+      const winningLines = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+      ];
+      */
+      const winningLines = Game.getWinningLines()
+      return true
+      //here: iterate through the winning lines and check if 'i' is in the winning line. If so, return true. Else, return false.
+      // for (let j = 0; j < winningLines.length; j++) {
+      //   const [a, b, c] = winningLines[j];
+      //   if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      //     return squares[a];
+      //   }
+      // }
+    }
+  }
+
   handleClick(i) {
     const history = this.state.history.slice(0, this.state.stepNumber + 1)
     const current = history[history.length-1]
@@ -112,6 +174,7 @@ class Game extends React.Component {
     this.setState({
       stepNumber: step,
       xIsNext: (step % 2) === 0,
+      
     })
   }
 
@@ -162,19 +225,8 @@ class Game extends React.Component {
   render() {
     const history = this.state.history
     const current = history[this.state.stepNumber]
-    //const selectedIndex = current.selectedIndex
-    //const clickLocation = this.determineClickLocation(selectedIndex)
-    //const currentNumber = this.state.stepNumber
-    //the difference between current and history[stepNumber-1] shows which element was altered
-
-    //alternatively, we can check the thing that makes the difference between current and history[stepNumber-1]
-      //handleClick(i) -> make a copy of and edit squares[i]
-        //handleClick is sent to onClick(i)
-          //the value of i in handleClick(i) tells which label needs to be sent to the different history buttons
-
     const winner = calculateWinner(current.squares)
 
-    
     const moves = history.map((step, move) => {
       const description = move ? 'Go to move #' + move : 'Go to game start'
       const selectedIndex = step.selectedIndex      
@@ -185,8 +237,8 @@ class Game extends React.Component {
       //It’s strongly recommended that you assign proper keys whenever you build dynamic lists.
       //Generally, don't use index as key, but here it is fine because we aren't swapping array positions
       return (
-        <li key={move}>
-          <button onClick={()=>this.jumpTo(move)}> {description}</button> <label>{clickLocation}</label>
+        <li key={move} style={{fontWeight: move===this.state.stepNumber ? 700:400}}>
+          <button onClick={()=>this.jumpTo(move)} > {description}</button> <label>{clickLocation}</label>
         </li>
       )//put in the location of the move here => based on current
     })
@@ -202,6 +254,7 @@ class Game extends React.Component {
       <div className="game">
         <div className="game-board">
           <Board 
+            isUsedForVictory={this.checkIfUsedForVictory}
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
           />
@@ -222,22 +275,17 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
+//This function goes through the winning lines and returns the winning side: 'X' or 'O'
 function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
+  const winningLines = Game.getWinningLines()
+
+  for (let i = 0; i < winningLines.length; i++) {
+    const [a, b, c] = winningLines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return squares[a];
     }
   }
   return null;
 }
+
+
