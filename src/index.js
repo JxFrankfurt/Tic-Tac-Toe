@@ -33,9 +33,6 @@ const Row = styled.div`
 class Board extends React.Component {
   //"Compound components"
     //Lambda function component stored in a static variable
-
-    //isUsedForVictory, 
-    //style={{background: isUsedForVictory ?  '#bcd6ff' :  '#FFFFFF' }}
   static Square = ({isUsedForVictory, value, onClick}) => <button 
   className="square" 
   onClick={onClick}
@@ -44,8 +41,6 @@ class Board extends React.Component {
     {value}
   </button>
 
-  //isUsedForVictory={this.props.checkIfUsedForVictory(i)}
-    //The problem is: isUsedForVictory isn't actually ever called. It's just defined.
   renderSquare(i) {
     return <Board.Square 
     isUsedForVictory={this.props.isUsedForVictory(i)}
@@ -104,22 +99,20 @@ class Game extends React.Component {
     ])
   } 
 
-  //TODO: Make this method turn only the winning squares light blue to highlight the 3 in a row.
-    //Currently, this method highlights all squares when a victory is reached.
+  //this method turns only the winning squares light blue to highlight the 3 in a row.
   checkIfUsedForVictory(i){
     const history = this.state.history.slice(0, this.state.stepNumber + 1)
     const current = history[history.length-1]
     const squares = current.squares.slice();
     
-    //If there is no winner, no swuares are used for victory, so return false
+    //If there is no winner, no squares are used for victory, so return false
     if(!calculateWinner(squares)) {
       return false
     }
     else{
       //look at squares and check if any rows, cols, or diags are all 'X' or all 'O'.
-        //Because of this if/else, one row/col/diag surely is filled with 'X' or 'O'
-          //There is an efficient way to search and there is a naive, but good enough way. In this case, I'm not worried about performance.
-            //This is a really small puzzle.
+        //Because of this if/else, surely one row/col/diag is filled with 'X' or 'O'
+        
       /*
       const winningLines = [
         [0, 1, 2],
@@ -133,14 +126,13 @@ class Game extends React.Component {
       ];
       */
       const winningLines = Game.getWinningLines()
-      return true
       //here: iterate through the winning lines and check if 'i' is in the winning line. If so, return true. Else, return false.
-      // for (let j = 0; j < winningLines.length; j++) {
-      //   const [a, b, c] = winningLines[j];
-      //   if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      //     return squares[a];
-      //   }
-      // }
+      for (let j = 0; j < winningLines.length; j++) {
+        const [a, b, c] = winningLines[j];
+        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c] && winningLines[j].includes(i)) {
+          return true
+        }
+      }
     }
   }
 
@@ -277,7 +269,8 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
-//This function goes through the winning lines and returns the winning side: 'X' or 'O'
+//This function goes through the winning lines and returns the winning side: 'X' or 'O'.
+  //If there is no winner, return null.
 function calculateWinner(squares) {
   const winningLines = Game.getWinningLines()
 
