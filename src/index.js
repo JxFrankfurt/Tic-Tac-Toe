@@ -33,11 +33,10 @@ const Row = styled.div`
 class Board extends React.Component {
   //"Compound components"
     //Lambda function component stored in a static variable
-  static Square = ({isUsedForVictory, value, onClick}) => <button 
+  static Square = ({isUsedForVictory, value, onClick, isCatGame}) => <button 
   className="square" 
   onClick={onClick}
-  style={{background: isUsedForVictory ?  '#bcd6ff' :  '#FFFFFF' }}
-  >
+  style={{ background: isUsedForVictory ? '#bcd6ff' : isCatGame ? '#ffda60' : '#FFFFFF' }}>
     {value}
   </button>
 
@@ -46,6 +45,7 @@ class Board extends React.Component {
     isUsedForVictory={this.props.isUsedForVictory(i)}
     value={this.props.squares[i]}
     onClick={()=>this.props.onClick(i)}
+    isCatGame={this.props.isCatGame}
     />;
   }
 
@@ -80,7 +80,6 @@ class Game extends React.Component {
         squares: Array(9).fill(null),
         selectedIndex: null,
       }],
-    
       stepNumber: 0,
       xIsNext: true,
     }
@@ -99,7 +98,30 @@ class Game extends React.Component {
     ])
   } 
 
+  //returns true if there's a draw. returns false if it's not a draw yet.
+  checkIfCatGame(squares) {
+    const winningLines = Game.getWinningLines()
+  
+    //!calculateWinner to make sure no one has won.
+    //!squares[i].includes(null) to make sure there are no empty spaces to fill
+      //if these conditions are met, it is a cat game. Otherwise, the game continues.
+  
+    if (!calculateWinner(squares)) {
+      //if(this.state.stepNumber === 9){ //This would be less computation, but there's a magic number 9(or maybe 8). 
+        //I could define a constant, but I want to get this working rather than work on optimizing something that doesnt work yet.
+      if(!squares.includes(null)){
+        return true
+      }
+    }
+    
+    return false
+  }
+
   //this method turns only the winning squares light blue to highlight the 3 in a row.
+    //this rechecks for each square.
+      //This is okay with a small application -> it's just a tic tac toe game with 9 spaces.
+        //if it were more complex, i would want to check what indices are used for victory once and then refer to that list
+          //(rather than checking 9 times for each victory.)
   checkIfUsedForVictory(i){
     const history = this.state.history.slice(0, this.state.stepNumber + 1)
     const current = history[history.length-1]
@@ -110,7 +132,7 @@ class Game extends React.Component {
       return false
     }
     else{
-      //look at squares and check if any rows, cols, or diags are all 'X' or all 'O'.
+      //look at squares[] and check if any rows, cols, or diags are all 'X' or all 'O'.
         //Because of this if/else, surely one row/col/diag is filled with 'X' or 'O'
         
       /*
@@ -128,18 +150,19 @@ class Game extends React.Component {
       const winningLines = Game.getWinningLines()
       //here: iterate through the winning lines and check if 'i' is in the winning line. If so, return true. Else, return false.
       for (let j = 0; j < winningLines.length; j++) {
-        const [a, b, c] = winningLines[j];
+        const [a, b, c] = winningLines[j]
         if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c] && winningLines[j].includes(i)) {
           return true
         }
       }
     }
   }
+  
 
   handleClick(i) {
     const history = this.state.history.slice(0, this.state.stepNumber + 1)
     const current = history[history.length-1]
-    const squares = current.squares.slice();
+    const squares = current.squares.slice()
     /*
       const squares = this.state.squares.slice()
       A copy of this.state.squares.slice is passed to squares
@@ -152,7 +175,7 @@ class Game extends React.Component {
       return
     }
 
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
+    squares[i] = this.state.xIsNext ? 'X' : 'O'
     this.setState({
       history: history.concat([{
         squares: squares,
@@ -219,6 +242,8 @@ class Game extends React.Component {
     const history = this.state.history
     const current = history[this.state.stepNumber]
     const winner = calculateWinner(current.squares)
+    const isCatGame = this.checkIfCatGame(current.squares)
+
 
     const moves = history.map((step, move) => {
       const description = move ? 'Go to move #' + move : 'Go to game start'
@@ -239,22 +264,26 @@ class Game extends React.Component {
     let status;
     if(winner){
       status = 'Winner: ' + winner
+    } else if(isCatGame){
+      status = `Cat's game 🐈`
     } else {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O')
     }
-
-    //isUsedForVictory={this.checkIfUsedForVictory}     
+   
     return (
       <div className="game">
-        <div className="game-board">
+        <div  className="game-board">
           <Board 
             isUsedForVictory= {(i) => this.checkIfUsedForVictory(i)}
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
+            isCatGame ={isCatGame}
           />
         </div>
         <div className="game-info">
-          <div>{status}</div>
+          <div
+          >
+            {status}</div>
           <ol>{moves}</ol>
         </div>
       </div>
@@ -277,10 +306,10 @@ function calculateWinner(squares) {
   for (let i = 0; i < winningLines.length; i++) {
     const [a, b, c] = winningLines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return squares[a]
     }
   }
-  return null;
+  return null
 }
 
 
